@@ -1,0 +1,53 @@
+{% load url from future %}{% load helpers %}{% spaceless %}
+<article id="task-{{ task.id }}"{% if not task.days_left == None %} data-days-left="{{ task.days_left }}"{% endif %} class="todo-task{% if task.owner and task.owner == user %} my{% endif %}{% if task.assigned == user %} assigned{% endif %}{% if not task.completed %} active{% if task.days_left < 0 %} overtime{% endif %}{% endif %}">
+    <header>
+        <span class="task-title">{{ task.name }}</span>
+        {% if not task.completed %}
+        <span class="task-deadline">Deadline <time class="timeago" datetime="{{ task.deadline|date:"c" }}">{{ task.deadline }}</time></span>
+        {% else %}
+        <span class="task-completed">Completed <time class="timeago" datetime="{{ task.completed|date:"c" }}">{{ task.completed }}</time>
+        {% if task.completedby and task.completedby != task.owner %}
+        by <a href="#">{{ task.completedby.username }}</a>
+        {% endif %}
+        </span>
+        {% endif %}
+        {% if task.assigned and not task.assigned == task.owner %}
+        <span class="task-assigned">Assigned to <a href="#">{{ task.assigned.username }}</a></span>
+        {% else %}
+        {% if task.owner %}
+        <span class="task-assigned">Owned by <a href="#">{{ task.owner.username }}</a></span>
+        {% endif %}
+        {% endif %}
+    </header>
+    <div class="task-content">
+    </div>
+    {% if user.is_authenticated %}
+    <footer>
+        <div class="task-btns">
+        {% if not task.completed %}
+        {% if not task.owner %}
+            <a class="claim-btn task-btn btn" href="{% api_detail_action 'v1.task' task.id 'claim' %}">Claim</a>
+        {% else %}
+        {% if task.owner == user or task.assigned == user %}
+            <a class="complete-btn task-btn btn{% if not task.assigned == user %} disabled{% endif %}" href="{% api_detail_action 'v1.task' task.id 'complete' %}">Complete</a>
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">{% if task.assigned == user %}Assign task{% else %}Assigned to {{ task.assigned }}{% endif %}<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    {% for user in other_users %}
+                    {% if not task.assigned == user %}
+                    <li><a class="task-btn" href="{% api_detail_action_with_arg 'v1.task' task.id user 'assign' %}">{{ user }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+                {% if not task.assigned == task.owner %}
+                <a class="task-btn btn btn-mini" href="{% api_detail_action_with_arg 'v1.task' task.id user 'assign' %}">X</a>
+                {% endif %}
+            </div>
+        {% endif %}
+        {% endif %}
+        {% endif %}
+        </div>
+    </footer>
+    {% endif %}
+</article>
+{% endspaceless %}

@@ -1,0 +1,11 @@
+{% for task in todo %}
+{% include "todo/task_details.html" %}
+{% endfor %}
+<h5>Last finished tasks</h5>
+{% for action, task in last.items %}
+<article class="task-summary">
+<header>
+{{ task.name }} was completed <time class="timeago" datetime="{{ task.completed|date:"c" }}">{{ task.completed }}</time> by {% if task.completedby %}{{ task.completedby }}{% else %}{{ task.owner }}{% endif %}
+</header>
+</article>
+{% endfor %}

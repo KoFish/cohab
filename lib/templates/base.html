@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}{% endblock %} - CoHab</title>
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/font-awesome.css">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap-responsive.css">
+        {% block pagestyles %}{% endblock %}
+    </head>
+    <body>
+        {% block body %}{% endblock %}
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.timeago.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/bootstrap.js"></script>
+        {% block pagejs %}{% endblock %}
+        </script>
+    </body>
+</html>

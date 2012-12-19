@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% block title %}{% endblock %}
+{% block pagestyles %}
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/todo-style.css">
+{% endblock %}
+
+        {% block body %}
+        <div id="page" class="container">
+            <header>{% block header %}{% endblock %}</header>
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span2">
+                        <ul class="nav nav-list">
+                            <li><a href="{% url 'todo:home' %}">Home</a></li>
+                            <li><a href="{% url 'todo:list_tasks' %}">Todo</a></li>
+                            {% if user.is_authenticated %}
+                            <li><a href="{% url 'todo:list_tasks' %}?user={{ user.pk }}">Just my tasks</a></li>
+                            {% endif %}
+                            <li><a href="{% url 'todo:list_areas' %}">Areas</a></li>
+                            <li class="divider"></li>
+                            {% if user.is_authenticated %}
+                            <li><a href="{% url 'logout' %}?next={{ request.get_full_path }}" class="logout">Logout</a></li>
+                            {% else %}
+                            <li><a href="{% url 'login' %}?next={{ request.get_full_path }}" class="login">Login</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="span8">
+                        <div id="page-content">{% block content %}{% endblock %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+
+{% block pagejs %}
+        <script type="text/javascript" src="{{ STATIC_URL}}js/overlay.jquery.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/login-modal.jquery.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/task-counter.jquery.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/todo.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $.timeago.settings.allowFuture = true;
+                $('time.timeago').timeago();
+                $('time[datetime]').each(function() {
+                    $(this).tooltip({
+                        animation: true,
+                        html: $(this).attr('datetime'),
+                        trigger: 'hover',
+                        placement: 'right'
+                        });
+                });
+            });
+        </script>
+{% endblock %}

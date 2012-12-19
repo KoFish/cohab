@@ -1,0 +1,11 @@
+{% extends "todo_base.html" %}
+
+{% block title %}List things to do{% endblock %}
+{% block header %}<h1>TODO <small>Things to do</small></h1>{% endblock %}
+{% block content %}
+            <div id="todo-list">
+                {% for task in task_list %}{% include "todo/task_details.html" %}{% empty %}<h1>Nothing to do here!</h1>{% endfor %}
+                {% include "pagination.html" %}
+            </div>
+{% endblock %}
+

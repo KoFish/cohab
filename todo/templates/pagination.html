@@ -1,0 +1,7 @@
+{% load helpers %}{% if is_paginated %}<div class="pagination">
+    <ul>
+        {% if page_obj.has_previous %}<li><a href="{% add_to_get page=page_obj.previous_page_number %}">Prev</a></li>{% else %}<li class="disabled"><span>Prev</span></li>{% endif %}
+        {% for page in paginator.page_range %}{% if page_obj.number == page %}<li class="active"><span>{{ page }}</span></li>{% else %}<li><a href="{% add_to_get page=page %}">{{ page }}</a></li>{% endif %}
+        {% endfor %}{% if page_obj.has_next %}<li><a href="{% add_to_get page=page_obj.next_page_number %}">Next</a></li>{% else %}<li class="disabled"><span>Next</span></li>{% endif %}
+    </ul>
+</div>{% endif %}

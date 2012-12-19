@@ -1,0 +1,7 @@
+{% extends "todo_base.html" %}
+
+{% block title %}List things to do{% endblock %}
+{% block header %}<h1>{{ area.name }} <small>Area</small></h1>{% endblock %}
+{% block content %}
+    {% include "todo/area_detail.stump.html" %}
+{% endblock %}

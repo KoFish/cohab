@@ -1,0 +1,12 @@
+{% load url from future %}
+<form class="form-horizontal" method="POST" action="{% url 'login' %}?next={% if not next == path %}{{ next }}{% else %}/{% endif %}">
+    <legend id="loginLabel">Login</legend>
+    {% csrf_token %}
+    {% include 'bootstrap_form.html' %}
+    <div class="control-group">
+        <div class="controls">
+            <button type="submit" class="btn btn-primary login">Login</button>
+            <button type="reset" class="btn abort">Abort</button>
+        </div>
+    </div>
+</form>
