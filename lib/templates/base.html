@@ -3,8 +3,8 @@
     <head>
         <title>{% block title %}{% endblock %} - CoHab</title>
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap.css">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/font-awesome.css">
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap-responsive.css">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/font-awesome.css">
         {% block pagestyles %}{% endblock %}
     </head>
     <body>
@@ -13,6 +13,20 @@
         <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.timeago.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/bootstrap.js"></script>
         {% block pagejs %}{% endblock %}
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $.timeago.settings.allowFuture = true;
+                $('time.timeago').timeago();
+                $('time[datetime]').each(function() {
+                    $(this).tooltip({
+                        animation: true,
+                        html: $(this).attr('datetime'),
+                        trigger: 'hover',
+                        placement: 'right'
+                        });
+                });
+            });
+        </script>
         </script>
     </body>
 </html>

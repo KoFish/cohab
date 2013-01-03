@@ -8,10 +8,12 @@ from django.template.defaultfilters import slugify
 
 class TaskArea(models.Model):
     slug = models.SlugField(unique=True, max_length=255, editable=False)
-    name = models.CharField(_('name'), max_length=255,
-            unique=True, db_index=True)
-    owner = models.ForeignKey(User,
-            null=True, blank=True, related_name="areas")
+    name = models.CharField(_('name'), max_length=255, unique=True, db_index=True)
+    owner = models.ForeignKey(User, null=True, blank=True, related_name="areas")
+
+    def has_task(self):
+        return self.tasks.filter(completed__isnull=True).exists()
+    has_task.boolean = True
 
     def __unicode__(self):
         return self.name
@@ -36,24 +38,17 @@ class TaskAction(models.Model):
 
 
 class Task(models.Model):
-    action = models.ForeignKey(TaskAction, verbose_name=_('action'),
-            related_name="tasks")
-    object = models.CharField(_('object'), max_length=255,
-            blank=True, null=True)
-    area = models.ForeignKey(TaskArea, related_name="tasks",
-            verbose_name=_('area'), blank=True, null=True)
+    action = models.ForeignKey(TaskAction, verbose_name=_('action'), related_name="tasks")
+    object = models.CharField(_('object'), max_length=255, blank=True, null=True)
+    area = models.ForeignKey(TaskArea, related_name="tasks", verbose_name=_('area'), blank=True, null=True)
     deadline = models.DateTimeField(_('deadline'), blank=True, null=True)
-    owner = models.ForeignKey(User, verbose_name=_('owner'),
-            related_name="owned_tasks", blank=True, null=True)
-    assigned = models.ForeignKey(User, verbose_name=_('assignee'),
-            related_name="tasks", blank=True, null=True)
-    completedby = models.ForeignKey(User, blank=True, null=True,
-            verbose_name=_('completed by'), related_name="completed")
+    owner = models.ForeignKey(User, verbose_name=_('owner'), related_name="owned_tasks", blank=True, null=True)
+    assigned = models.ForeignKey(User, verbose_name=_('assignee'), related_name="tasks", blank=True, null=True)
+    completedby = models.ForeignKey(User, blank=True, null=True, verbose_name=_('completed by'), related_name="completed")
     completed = models.DateTimeField(_('completed'), blank=True, null=True)
     added = models.DateTimeField(_('added'), editable=False)
     modified = models.DateTimeField(_('modified'), editable=False)
-    repeater = models.ForeignKey('RepeatingTask', blank=True, null=True,
-            related_name="tasks", editable=False, on_delete=models.SET_NULL)
+    repeater = models.ForeignKey('RepeatingTask', blank=True, null=True, related_name="tasks", editable=False, on_delete=models.SET_NULL)
 
     class Meta:
         ordering = ['-completed', 'deadline', '-added']
@@ -90,7 +85,7 @@ class Task(models.Model):
     def complete(self, request=None):
         if self.completed:
             raise Exception("This task has already been completed")
-        user = request.user if request else None
+        user = request.user if request else self.assigned or self.owner
         self.completed = now()
         self.completedby = user
         self.save()
@@ -113,16 +108,15 @@ class Task(models.Model):
 
 class RepeatingTask(models.Model):
     action = models.ForeignKey(TaskAction, related_name="repeated_tasks")
-    object = models.CharField(_('object'), max_length=255,
-            blank=True, null=True)
-    area = models.ForeignKey(TaskArea, related_name="repeated_tasks",
-            blank=True, null=True)
+    object = models.CharField(_('object'), max_length=255, blank=True, null=True)
+    area = models.ForeignKey(TaskArea, related_name="repeated_tasks", blank=True, null=True)
     delay = models.IntegerField(_('days to delay'), blank=True, null=True)
     require_completed = models.BooleanField(_('require completed'),
-            default=True, help_text=_('Require that all instances of this '
-                'task should have been completed before adding another.'))
-    deadline = models.IntegerField(_('days from start to deadline'),
-            blank=True, null=True)
+                                            default=True,
+                                            help_text=_('Require that all instances of this '
+                                                        'task should have been completed '
+                                                        'before adding another.'))
+    deadline = models.IntegerField(_('days from start to deadline'), blank=True, null=True)
     modified = models.DateTimeField(_('modified'), editable=False)
 
     class Meta:
@@ -144,10 +138,21 @@ class RepeatingTask(models.Model):
             return None
 
     def get_next_owner(self):
-        # TODO: Add logic for picking a next owner
         if self.area and self.area.owner:
             return self.area.owner
-        return None
+        else:
+            tasks = self.tasks.filter(completed__isnull=False).order_by('-completed')
+            users = list(User.objects.filter(is_active=True))
+            for task in tasks:
+                if len(users) == 1:
+                    return users[0]
+                if task.completedby in users:
+                    users.remove(task.completedby)
+            if users:
+                user = sorted([(u.tasks.filter(completed__isnull=True).count(), u) for u in users], key=lambda k: k[0])[0][1]
+                return user
+            else:
+                return None
 
     @property
     def days_to_next(self):

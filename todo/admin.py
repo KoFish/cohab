@@ -20,16 +20,20 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['name', 'days_left', 'is_repeating', 'is_completed',
                     'owner', 'assigned', 'deadline', 'completed']
     excludes = ('modified', 'added')
-    fieldsets = (
-            (None, {'fields': ('action', 'area', 'object', 'owner', 'deadline')}),
-            ("Status", {'fields': ('completed', 'completedby', 'assigned')}))
+    fieldsets = ((None, {'fields': ('action', 'area', 'object', 'owner', 'deadline')}),
+                 ("Status", {'fields': ('completed', 'completedby', 'assigned')}))
 
-    actions = ['make_completed', 'make_not_completed']
+    actions = ['make_completed', 'make_completed_with_assignee', 'make_not_completed']
 
     def make_completed(self, request, queryset):
         for t in queryset.all():
             t.complete(request=request)
     make_completed.short_description = "Make tasks completed"
+
+    def make_completed_with_assignee(self, request, queryset):
+        for t in queryset.all():
+            t.complete(request=None)
+    make_completed_with_assignee.short_description = "Make tasks completed with currently assigned user"
 
     def make_not_completed(self, request, queryset):
         queryset.update(completed=None, completedby=None)

@@ -39,18 +39,4 @@
         <script type="text/javascript" src="{{ STATIC_URL}}js/login-modal.jquery.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/task-counter.jquery.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/todo.js"></script>
-        <script type="text/javascript">
-            $(document).ready(function() {
-                $.timeago.settings.allowFuture = true;
-                $('time.timeago').timeago();
-                $('time[datetime]').each(function() {
-                    $(this).tooltip({
-                        animation: true,
-                        html: $(this).attr('datetime'),
-                        trigger: 'hover',
-                        placement: 'right'
-                        });
-                });
-            });
-        </script>
 {% endblock %}

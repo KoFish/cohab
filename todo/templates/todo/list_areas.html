@@ -7,7 +7,7 @@
             <div id="area-list">
                 {% for area in taskarea_list %}
                 <article>
-                <a href="{% url 'todo:show_area' slug=area.slug %}">{{ area.name }}</a>
+                <i class="{% if area.has_task %}icon-circle-blank{% else %}icon-circle{% endif %}"></i> <a href="{% url 'todo:show_area' slug=area.slug %}" id="show-{{ area.slug }}">{{ area.name }}</a>
                 </article>
                 {% empty %}<h1>Nothing to do here!</h1>{% endfor %}
                 {% include "pagination.html" %}
@@ -23,10 +23,9 @@
                     $this.click(function(e) {
                         e.preventDefault();
                         if ($this.parent().hasClass('open')) {
-                            console.log($this);
-                            console.log('Is open, close and try again');
                             $this.parent().find('.area-detail').remove();
                             $this.parent().removeClass('open');
+                            location.hash = '';
                             return;
                         }
                         $this.parent().addClass('open');
@@ -35,9 +34,23 @@
                             $('.area-detail').remove();
                             $this.after($('<div />', {'class': 'well area-detail'}).html(data));
                             $('.todo-task').setupTask();
+                            $.timeago.settings.allowFuture = true;
+                            $('.area-detail').find('time.timeago').timeago();
+                            $('.area-detail').find('time[datetime]').each(function() {
+                                $(this).tooltip({
+                                    animation: true,
+                                    html: $(this).attr('datetime'),
+                                    trigger: 'hover',
+                                    placement: 'right'
+                                    });
+                            });
+                            location.hash = $this.attr('id');
                         })
                     });
                 });
+                if (location.hash != '') {
+                    $(location.hash).click();
+                }
             });
         </script>
 {% endblock %}
