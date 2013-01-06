@@ -10,7 +10,7 @@ class Migration(DataMigration):
     def forwards(self, orm):
         "Write your forwards methods here."
         # Note: Remember to use orm['appname.ModelName'] rather than "from appname.models..."
-        for area in orm['todo.TaskAction'].objects.all():
+        for area in orm['todo.TaskArea'].objects.all():
             if not area.slug:
                 new_slug = slug = slugify(area.name)
                 slug_count = 0
