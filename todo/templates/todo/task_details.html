@@ -7,15 +7,15 @@
         {% else %}
         <span class="task-completed">Completed <time class="timeago" datetime="{{ task.completed|date:"c" }}">{{ task.completed }}</time>
         {% if task.completedby and task.completedby != task.owner %}
-        by <a href="#">{{ task.completedby.username }}</a>
+        by <a href="{% url "todo:show_user" task.completedby %}">{{ task.completedby.username }}</a>
         {% endif %}
         </span>
         {% endif %}
         {% if task.assigned and not task.assigned == task.owner %}
-        <span class="task-assigned">Assigned to <a href="#">{{ task.assigned.username }}</a></span>
+        <span class="task-assigned">Assigned to <a href="{% url "todo:show_user" task.assigned %}">{{ task.assigned.username }}</a></span>
         {% else %}
         {% if task.owner %}
-        <span class="task-assigned">Owned by <a href="#">{{ task.owner.username }}</a></span>
+        <span class="task-assigned">Owned by <a href="{% url "todo:show_user" task.owner %}">{{ task.owner.username }}</a></span>
         {% endif %}
         {% endif %}
     </header>

@@ -1,4 +1,4 @@
-{% extends "todo_base.html" %}
+{% extends "todo/base.html" %}
 {% load url from future %}
 
 {% block title %}List areas{% endblock %}
@@ -6,52 +6,13 @@
 {% block content %}
             <div id="area-list">
                 {% for area in taskarea_list %}
+                {% if area.tasks.exists %}
                 <article>
-                <i class="{% if area.has_task %}icon-circle-blank{% else %}icon-circle{% endif %}"></i> <a href="{% url 'todo:show_area' slug=area.slug %}" id="show-{{ area.slug }}">{{ area.name }}</a>
+                <i class="{% if area.has_task %}icon-circle{% else %}icon-circle-blank{% endif %}"></i> <a class="url-folder" data-foldee="#fold-target-{{ area.slug }}" href="{% url 'todo:show_area' slug=area.slug %}" id="show-{{ area.slug }}">{{ area.name }}</a>
+                <div class="drop-in" id="fold-target-{{ area.slug }}"></div>
                 </article>
+                {% endif %}
                 {% empty %}<h1>Nothing to do here!</h1>{% endfor %}
                 {% include "pagination.html" %}
             </div>
 {% endblock %}
-
-{% block pagejs %}
-        {{ block.super }}
-        <script type="text/javascript">
-            $(document).ready(function() {
-                $('#area-list > article a').each(function() {
-                    var $this = $(this);
-                    $this.click(function(e) {
-                        e.preventDefault();
-                        if ($this.parent().hasClass('open')) {
-                            $this.parent().find('.area-detail').remove();
-                            $this.parent().removeClass('open');
-                            location.hash = '';
-                            return;
-                        }
-                        $this.parent().addClass('open');
-                        $.get($this.attr('href'), function(data) {
-                            $('.area-detail').parent().removeClass('open');
-                            $('.area-detail').remove();
-                            $this.after($('<div />', {'class': 'well area-detail'}).html(data));
-                            $('.todo-task').setupTask();
-                            $.timeago.settings.allowFuture = true;
-                            $('.area-detail').find('time.timeago').timeago();
-                            $('.area-detail').find('time[datetime]').each(function() {
-                                $(this).tooltip({
-                                    animation: true,
-                                    html: $(this).attr('datetime'),
-                                    trigger: 'hover',
-                                    placement: 'right'
-                                    });
-                            });
-                            location.hash = $this.attr('id');
-                        })
-                    });
-                });
-                if (location.hash != '') {
-                    $(location.hash).click();
-                }
-            });
-        </script>
-{% endblock %}
-

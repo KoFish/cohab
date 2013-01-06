@@ -1,28 +1,21 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
-from django.template.defaultfilters import slugify
 
-class Migration(DataMigration):
+
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
-        # Note: Remember to use orm['appname.ModelName'] rather than "from appname.models..."
-        for area in orm['todo.TaskAction'].objects.all():
-            if not area.slug:
-                new_slug = slug = slugify(area.name)
-                slug_count = 0
-                while area.objects.filter(slug=new_slug).exists():
-                    slug_count += 1
-                    new_slug = slug + "-" + slug_count
-                area.slug = new_slug
-                area.save()
 
+        # Changing field 'TaskAction.slug'
+        db.alter_column('todo_taskaction', 'slug', self.gf('django.db.models.fields.SlugField')(default=None, unique=True, max_length=255))
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+
+        # Changing field 'TaskAction.slug'
+        db.alter_column('todo_taskaction', 'slug', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=255, null=True))
 
     models = {
         'auth.group': {
@@ -73,35 +66,34 @@ class Migration(DataMigration):
             'require_completed': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         'todo.task': {
-            'Meta': {'ordering': "['-completed', 'deadline', '-checkedout', '-added']", 'object_name': 'Task'},
+            'Meta': {'ordering': "['-completed', 'deadline', '-added']", 'object_name': 'Task'},
             'action': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tasks'", 'to': "orm['todo.TaskAction']"}),
             'added': ('django.db.models.fields.DateTimeField', [], {}),
             'area': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'tasks'", 'null': 'True', 'to': "orm['todo.TaskArea']"}),
-            'checkedout': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'checkedoutby': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'checkouts'", 'null': 'True', 'to': "orm['auth.User']"}),
+            'assigned': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'tasks'", 'null': 'True', 'to': "orm['auth.User']"}),
             'completed': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'completedby': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'completed'", 'null': 'True', 'to': "orm['auth.User']"}),
             'deadline': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {}),
             'object': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tasks'", 'to': "orm['auth.User']"}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'owned_tasks'", 'null': 'True', 'to': "orm['auth.User']"}),
             'repeater': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'tasks'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': "orm['todo.RepeatingTask']"})
         },
         'todo.taskaction': {
             'Meta': {'object_name': 'TaskAction'},
             'has_area': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '255'})
         },
         'todo.taskarea': {
             'Meta': {'object_name': 'TaskArea'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'db_index': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'areas'", 'null': 'True', 'to': "orm['auth.User']"}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '255', 'null': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '255'})
         }
     }
 
     complete_apps = ['todo']
-    symmetrical = True

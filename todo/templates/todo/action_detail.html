@@ -1,0 +1,7 @@
+{% extends "todo/base.html" %}
+
+{% block title %}List things to do{% endblock %}
+{% block header %}<h1>{{ action.name }} <small>Action</small></h1>{% endblock %}
+{% block content %}
+    {% include "todo/action_detail.stump.html" %}
+{% endblock %}

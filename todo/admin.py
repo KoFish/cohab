@@ -8,7 +8,9 @@ class TaskAreaAdmin(admin.ModelAdmin):
 
 
 class TaskActionAdmin(admin.ModelAdmin):
-    fields = ('name', 'has_area')
+    fields = ('name', 'has_area', 'listable')
+    list_display = ('__unicode__', 'has_area', 'listable')
+    ordering = ('listable',)
 
 
 class TaskObjectAdmin(admin.ModelAdmin):

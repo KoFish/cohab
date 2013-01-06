@@ -1,0 +1,20 @@
+{% extends "todo/base.html" %}
+{% load url from future %}
+
+{% block title %}{{ user.first_name }} {{ user.last_name }}{% endblock %}
+{% block header %}<h1>{{ user.first_name }} {{ user.last_name }} <small>User</small></h1>{% endblock %}
+{% block content %}
+<h2>Areas</h2>
+<div id="areas-list">
+    {% for area in areas %}
+    <div><i class="{% if area.has_task %}icon-circle{% else %}icon-circle-blank{% endif %}"></i> <a href="{% url "todo:show_area" area.slug %}">{{ area }}</a></div>
+    {% endfor %}
+</div>
+
+<h2>Tasks</h2>
+<div id="tasks-list">
+{% for task in incomplete %}
+{% include "todo/task_details.html" %}
+{% endfor %}
+</div>
+{% endblock %}

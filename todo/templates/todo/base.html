@@ -18,6 +18,7 @@
                             <li><a href="{% url 'todo:list_tasks' %}?user={{ user.pk }}">Just my tasks</a></li>
                             {% endif %}
                             <li><a href="{% url 'todo:list_areas' %}">Areas</a></li>
+                            <li><a href="{% url 'todo:list_actions' %}">Lists</a></li>
                             <li class="divider"></li>
                             {% if user.is_authenticated %}
                             <li><a href="{% url 'logout' %}?next={{ request.get_full_path }}" class="logout">Logout</a></li>

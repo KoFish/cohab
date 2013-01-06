@@ -41,3 +41,8 @@
 time {
     border-bottom: 1px dotted;
 }
+
+.drop-in {
+    display: none;
+    padding: 0 0 1em 3em;
+}

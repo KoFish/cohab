@@ -15,10 +15,7 @@
                         dot = $('<span />').css({height: 10, width: 10, display: "inline-block", margin: 2}),
                         counterValue = $this.data(settings['counter-value']);
 
-                    console.log($this);
-                    if (counterValue === undefined) {
-                        return;
-                    }
+                    if (counterValue === undefined) { return; }
 
                     if (counterValue > settings.max) {
                         $('<span />').css({
@@ -34,7 +31,7 @@
                         top: 0,
                         right: 2 
                     }).appendTo($this);
-                    for(var i = 0 ; i > counterValue + 1 ; i--) {
+                    for(var i = 0 ; i > Math.max(counterValue + 1, -settings.max) ; i--) {
                         dot.clone().css({backgroundColor: '#f00'}).appendTo(counter);
                     }
                     for(i = 0 ; i < Math.min(counterValue + 1, settings.max) ; i++) {

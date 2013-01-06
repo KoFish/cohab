@@ -1,0 +1,19 @@
+{% extends "todo/base.html" %}
+{% load url from future %}
+
+{% block title %}Lists{% endblock %}
+{% block header %}<h1>Lists <small></small></h1>{% endblock %}
+{% block content %}
+            <div id="action-list">
+                {% for action in taskaction_list %}
+                {% if action.tasks.exists %}
+                <article>
+                <i class="{% if action.has_task %}icon-circle{% else %}icon-circle-blank{% endif %}"></i> <a class="url-folder" data-foldee="#fold-target-{{ action.slug }}" href="{% url 'todo:show_action' action.slug %}" id="show-{{ action.slug }}">{{ action.name }}</a>
+                <div class="drop-in" id="fold-target-{{ action.slug }}"></div>
+                </article>
+                {% endif %}
+                {% empty %}<h1>Nothing to do here!</h1>{% endfor %}
+                {% include "pagination.html" %}
+            </div>
+{% endblock %}
+
