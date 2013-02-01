@@ -2,7 +2,7 @@ from django import forms
 from django.forms.forms import NON_FIELD_ERRORS
 
 
-class ExForm(forms.Form):
+class ErrorMixin(object):
     def add_error(self, message):
         if not self._errors:
             self._errors = forms.util.ErrorDict()
@@ -11,7 +11,7 @@ class ExForm(forms.Form):
         self._errors[NON_FIELD_ERRORS].append(message)
 
 
-class LoginForm(ExForm):
+class LoginForm(ErrorMixin, forms.Form):
     username = forms.CharField(label="User", required=True, max_length=32)
     password = forms.CharField(label="Password", required=True,
-            widget=forms.PasswordInput)
+                               widget=forms.PasswordInput)

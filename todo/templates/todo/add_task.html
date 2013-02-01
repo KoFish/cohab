@@ -1,0 +1,8 @@
+{% extends "todo/base.html" %}
+
+{% block title %}Add task to {% if action %}{{ action }}{% elif area %}{{ area }}{% endif %}{% endblock %}
+{% block header %}<h1>Add Task To <small>{% if action %}{{ action }}{% elif area %}{{ area }}{% endif %}</small></h1>{% endblock %}
+{% block content %}
+{% include "todo/add_to_form.html" with next=request.GET.next path=request.get_full_path  %}
+{% endblock %}
+

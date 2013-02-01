@@ -1,11 +1,22 @@
+#from django import forms
+from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView
+from django.views.generic import FormView
 from django.db.models import Q
 from django.contrib.auth.models import User
+from datetime import datetime
 from todo.models import Task, TaskArea, TaskAction
+from todo.forms import TaskForm
 from lib.views import ProtectedMixin, AjaxMixin
 
 
-class TodoList(ProtectedMixin, ListView):
+class TodoMixin(object):
+    def get_context_data(self, *a, **kw):
+        ctx = super(TodoMixin, self).get_context_data(*a, **kw)
+        return ctx
+
+
+class TodoList(ProtectedMixin, TodoMixin, ListView):
     template_name = 'todo/list_todo.html'
     model = Task
     paginate_by = 10
@@ -20,11 +31,11 @@ class TodoList(ProtectedMixin, ListView):
         if 'user' in self.request.GET:
             query &= Q(owner__pk=self.request.GET.get('user', None)) | Q(assigned__pk=self.request.GET.get('user', None))
         if 'completed' not in self.request.GET:
-                query &= Q(completed__isnull=True)
+            query &= Q(completed__isnull=True)
         return Task.objects.filter(query)
 
 
-class UserView(ProtectedMixin, AjaxMixin, DetailView):
+class UserView(ProtectedMixin, AjaxMixin, TodoMixin, DetailView):
     model = User
     template_name = 'todo/user_detail.html'
     ajax_template_name = 'todo/user_detail.stump.html'
@@ -39,7 +50,7 @@ class UserView(ProtectedMixin, AjaxMixin, DetailView):
         return ret
 
 
-class AreaList(ProtectedMixin, ListView):
+class AreaList(ProtectedMixin, TodoMixin, ListView):
     template_name = 'todo/list_areas.html'
     model = TaskArea
     paginate_by = 10
@@ -51,7 +62,7 @@ class AreaList(ProtectedMixin, ListView):
         return TaskArea.objects.filter(**filters)
 
 
-class AreaView(ProtectedMixin, AjaxMixin, DetailView):
+class AreaView(ProtectedMixin, AjaxMixin, TodoMixin, DetailView):
     model = TaskArea
     template_name = 'todo/area_detail.html'
     ajax_template_name = 'todo/area_detail.stump.html'
@@ -71,7 +82,7 @@ class AreaView(ProtectedMixin, AjaxMixin, DetailView):
         return ret
 
 
-class ActionView(ProtectedMixin, AjaxMixin, DetailView):
+class ActionView(ProtectedMixin, AjaxMixin, TodoMixin, DetailView):
     model = TaskAction
     template_name = 'todo/action_detail.html'
     ajax_template_name = 'todo/action_detail.stump.html'
@@ -83,17 +94,60 @@ class ActionView(ProtectedMixin, AjaxMixin, DetailView):
         ret['todo'] = action.tasks.filter(completed__isnull=True)
         tasks = action.tasks.filter(completed__isnull=False)
         if tasks.exists():
-            ret['last'] = tasks.latest('completed')
+            ret['last_tasks'] = tasks.order_by('object', '-completed').distinct('object')[:5]
         ret['other_users'] = User.objects.exclude(pk=self.request.user.pk)
         return ret
 
 
-class ActionList(ProtectedMixin, ListView):
+class ActionList(ProtectedMixin, TodoMixin, ListView):
     template_name = 'todo/list_actions.html'
     model = TaskAction
     paginate_by = 10
 
     def get_queryset(self):
         q = super(ActionList, self).get_queryset()
-        filters = {"has_area": False, 'listable': True}
+        filters = {"has_area": False, 'has_object': True}
         return q.filter(**filters)
+
+
+class AddTask(ProtectedMixin, AjaxMixin, TodoMixin, FormView):
+    template_name = 'todo/add_task.html'
+    ajax_template_name = 'todo/add_task_form.html'
+    form_class = TaskForm
+
+    def dispatch(self, request, *a, **kw):
+        if not request.is_ajax():
+            return redirect('todo:list_tasks')
+        return super(AddTask, self).dispatch(request, *a, **kw)
+
+    def get_context_data(self, *a, **kw):
+        ctx = super(AddTask, self).get_context_data(*a, **kw)
+        ctx['areas'] = TaskArea.objects.values('id', 'name')
+        ctx['actions'] = TaskAction.objects.values('id', 'name', 'has_area', 'has_object')
+        return ctx
+
+    def post(self, request, *a, **kw):
+        action = TaskAction.objects.get(id=request.POST.get('action'))
+        t = {'deadline': datetime.strptime(request.POST.get('deadline'), "%Y/%m/%d"),
+             'owner': request.user,
+             'action': action,
+             'object': request.POST.get('object') if action.has_object else None,
+             'area': TaskArea.objects.get(id=request.POST.get('area')) if action.has_area else None}
+        Task.objects.create(**t)
+        return self.json_response({'status': 'success'})
+
+
+class AddToArea(AddTask):
+    def get_context_data(self, *a, **kw):
+        ctx = super(AddTask, self).get_context_data(*a, **kw)
+        ctx['area'] = TaskArea.objects.get(slug=self.kwargs['slug'])
+        ctx['actions'] = TaskAction.objects.filter(has_area=True).values('id', 'name', 'has_area', 'has_object')
+        return ctx
+
+
+class AddToList(AddTask):
+    def get_context_data(self, *a, **kw):
+        ctx = super(AddTask, self).get_context_data(*a, **kw)
+        ctx['areas'] = TaskArea.objects.values('id', 'name')
+        ctx['action'] = TaskAction.objects.get(slug=self.kwargs['slug'])
+        return ctx

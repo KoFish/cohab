@@ -1,7 +1,8 @@
 from django.conf.urls import patterns, url  # , include
 from django.views.generic import TemplateView
-from todo.views import TodoList, AreaView, AreaList, ActionView, ActionList
-from todo.views import UserView
+from todo.views import AreaView, AreaList, ActionView, ActionList
+from todo.views import AddToList, AddToArea, AddTask
+from todo.views import UserView, TodoList
 
 urlpatterns = patterns('',
     url(r'^$', TemplateView.as_view(template_name="home.html"), name="home"),
@@ -11,4 +12,7 @@ urlpatterns = patterns('',
     url(r'^area/(?P<slug>\w+[-\w\d]+)/$', AreaView.as_view(), name="show_area"),
     url(r'^lists/', ActionList.as_view(), name="list_actions"),
     url(r'^list/(?P<slug>\w+[-\w\d]+)/$', ActionView.as_view(), name="show_action"),
+    url(r'^add/$', AddTask.as_view(), name="add_task"),
+    url(r'^add/to/list/(?P<slug>\w+[-\w\d]+)/$', AddToList.as_view(), name="add_to_list"),
+    url(r'^add/to/area/(?P<slug>\w+[-\w\d]+)/$', AddToArea.as_view(), name="add_to_area"),
 )

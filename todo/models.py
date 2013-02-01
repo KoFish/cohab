@@ -33,7 +33,7 @@ class TaskAction(models.Model):
     slug = models.SlugField(unique=True, max_length=255, editable=False)
     name = models.CharField(_('name'), max_length=255, unique=True)
     has_area = models.BooleanField(_('has area'), default=False)
-    listable = models.BooleanField(_('listable'), default=False)
+    has_object = models.BooleanField(_('has object'), default=False)
 
     def has_task(self):
         return self.tasks.filter(completed__isnull=True).exists()

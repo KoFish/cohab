@@ -1,6 +1,6 @@
 {% load url from future %}{% load helpers %}{% spaceless %}
 <article id="task-{{ task.id }}" class="todo-list-task">
-<a class="foldout-toggle{% if not task.completed and task.days_left < 0 %} text-error{% endif %}" data-foldee="#foldout-{{ task.id }}" href="#">{{ task.object }}</a>
+<a class="foldout-toggle{% if not task.completed and task.days_left < 0 %} text-error{% endif %}" data-foldee="#foldout-{{ task.id }}" href="#">{{ task.object }} <small class="extra-small">[{{ task.assigned.first_name }}]</small></a>
 <div id="foldout-{{ task.id }}" class="hide">
     <div>Assigned to <a href="{% url "todo:show_user" task.assigned %}">{{ task.assigned }}</a></div>
     {% if task.deadline and not task.completed %}

@@ -77,6 +77,7 @@ function getHashes() {
             $this.find('.todo-task').setupTask();
             $this.find('.todo-task.active').taskCounter({max: 5});
             $this.find('a.login').loginModal();
+            $this.find('.add-task-btn').taskModal();
             $this.find('.url-folder').folder();
             $this.find('.todo-list-task a.foldout-toggle').each(function() {
                 var $this = $(this),

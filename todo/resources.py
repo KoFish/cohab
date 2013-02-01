@@ -28,7 +28,8 @@ class TaskActionResource(ModelResource):
         allowed_methods = ['get']
         filtering = {
             'name': ALL,
-            'has_area': ALL
+            'has_area': ALL,
+            'has_object': ALL,
         }
 
         authentication = MultiAuthentication(SessionAuthentication())

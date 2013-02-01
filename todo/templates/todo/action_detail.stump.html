@@ -1,17 +1,21 @@
+{% load url from future %}
 <h3>{{ action.name }}</h3>
 <ul>
 {% for task in todo %}
 <li>{% include "todo/task_details.list.html" %}</li>
 {% endfor %}
 </ul>
-{% if last %}
-{% with last as task %}
+<button class="btn add-task-btn" href="{% url "todo:add_to_list" action.slug %}">Add task</button>
+{% if last_tasks %}
+{% with last_tasks as tasks %}
 <h5>Last finished tasks</h5>
+{% for task in tasks %}
 <article class="task-summary">
 <header>
 {{ task.name }} was completed <time class="timeago" datetime="{{ task.completed|date:"c" }}">{{ task.completed }}</time> by {% if task.completedby %}{{ task.completedby }}{% else %}{{ task.owner }}{% endif %}
-{% if task.repeater and task.repeater.days_to_next %} and will be assigned again in {{ task.repeater.days_to_next }} days.{% endif %}
+{% if task.repeater and task.repeater.days_to_next and task.repeater.days_to_next >= 0 %} and will be assigned again in {{ task.repeater.days_to_next }} days.{% endif %}
 </header>
 </article>
+{% endfor %}
 {% endwith %}
 {% endif %}

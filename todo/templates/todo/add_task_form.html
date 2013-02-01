@@ -1,0 +1,52 @@
+{% load url from future %}
+<form class="form-horizontal" method="POST" action="{% url 'todo:add_task' %}">
+    <legend id="loginLabel">Create {% if not actions %}{{ action.name }} {% endif %}Task {% if not areas %}for {{ area.name }}{% endif %}</legend>
+    {% csrf_token %}
+    <input type="hidden" id="next" value="{{ next }}">
+    {% if actions %}
+    <div class="control-group">
+        <label class="control-label" for="action"><p>Action:</p></label>
+        <div class="controls">
+            <select name="action" id="action">
+                {% for action in actions %}
+                <option id="action-{{ action.id }}" data-has-area="{{ action.has_area|yesno:"true,false" }}" data-has-object="{{ action.has_object|yesno:"true,false" }}" value="{{ action.id }}"{% if forloop.first %} selected{% endif %}>{{ action.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% else %}
+    <input type="hidden" id="action" name="action" value="{{ action.id }}" data-has-area="{{ action.has_area|yesno:"true,false" }}" data-has-object="{{ action.has_object|yesno:"true,false" }}">
+    {% endif %}
+    <div id="object-group" class="control-group">
+        <label class="control-label" for="object"><p>Object:</p></label>
+        <div class="controls">
+            <input id="object" type="text" name="object" maxlength="255">
+        </div>
+    </div>
+    {% if areas %}
+    <div id="area-group" class="control-group">
+        <label class="control-label" for="area"><p>Area:</p></label>
+        <div class="controls">
+            <select name="area" id="area">
+                {% for area in areas %}
+                <option value="{{ area.id }}"{% if forloop.first %} selected{% endif %}>{{ area.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% else %}
+    <input type="hidden" id="area" name="area" value="{{ area.id }}">
+    {% endif %}
+    <div class="control-group">
+        <label class="control-label" for="deadline"><p>Deadline:</p></label>
+        <div class="controls">
+            <input id="deadline" type="text" name="deadline" class="jdpicker">
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <button type="submit" class="btn btn-primary login">Add</button>
+            <button type="reset" class="btn abort">Cancel</button>
+        </div>
+    </div>
+</form>
