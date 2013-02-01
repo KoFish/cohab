@@ -46,3 +46,7 @@ time {
     display: none;
     padding: 0 0 1em 3em;
 }
+
+small.extra-small {
+    font-size: 0.7em;
+}

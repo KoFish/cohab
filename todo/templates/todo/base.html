@@ -2,6 +2,7 @@
 {% load url from future %}
 {% block title %}{% endblock %}
 {% block pagestyles %}
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/jdpicker.css">
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/todo-style.css">
 {% endblock %}
 
@@ -36,8 +37,10 @@
         {% endblock %}
 
 {% block pagejs %}
-        <script type="text/javascript" src="{{ STATIC_URL}}js/overlay.jquery.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL}}js/login-modal.jquery.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL}}js/task-counter.jquery.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.overlay.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.login-modal.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.task-modal.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.task-counter.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.jdpicker.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/todo.js"></script>
 {% endblock %}
