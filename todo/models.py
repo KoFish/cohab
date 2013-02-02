@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.utils.timezone import now
 from django.db import models
 from django.template.defaultfilters import slugify
+from todo.exceptions import TodoCompletedException
 
 
 class TaskArea(models.Model):
@@ -100,7 +101,7 @@ class Task(models.Model):
 
     def complete(self, request=None):
         if self.completed:
-            raise Exception("This task has already been completed")
+            raise TodoCompletedException("This task has already been completed")
         user = request.user if request else self.assigned or self.owner
         self.completed = now()
         self.completedby = user
