@@ -17,8 +17,9 @@ class TodoMixin(object):
         return ctx
 
 
-class TodoList(ProtectedMixin, TodoMixin, ListView):
+class TodoList(ProtectedMixin, AjaxMixin, TodoMixin, ListView):
     template_name = 'todo/list_todo.html'
+    ajax_template_name = 'todo/list_todo.stump.html'
     model = Task
     paginate_by = 10
 
@@ -178,3 +179,7 @@ class MultiComplete(ProtectedMixin, AjaxMixin, View):
                 except TodoCompletedException:
                     messages.warning(request, "%s has already been set as completed" % t.name)
         return self.json_response({'status': 'success'})
+
+
+class RepeatingList(ProtectedMixin, AjaxMixin, View):
+    pass

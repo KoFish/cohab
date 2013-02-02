@@ -1,7 +1,19 @@
 jQuery.reload = function(obj) {
-    var $foldPoint = obj.closest('.fold-target');
-    if ($foldPoint.length > 0) {
-        $foldPoint.folder("update");
+    var $reloadPoint = obj.closest('.fold-target, .reload-target');
+    if ($reloadPoint.length > 0) {
+        $reloadPoint = $reloadPoint.first();
+        if ($reloadPoint.hasClass('fold-target')) {
+            $reloadPoint.folder("update");
+        } else if ($reloadPoint.hasClass('reload-target')) {
+            var url = $reloadPoint.data('url');
+            $.get(url)
+                .done(function(data) {
+                    $reloadPoint.html(data).bootstrap();
+                })
+                .fail(function(err) {
+                    $.error("Could not reload data: " + err);
+                });
+        }
     } else {
         _.defer(function() { location.reload(); });
     }

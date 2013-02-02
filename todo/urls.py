@@ -4,6 +4,7 @@ from todo.views import AreaView, AreaList, ActionView, ActionList
 from todo.views import AddToUser, AddToList, AddToArea, AddTask
 from todo.views import UserView, TodoList
 from todo.views import MultiComplete
+from todo.views import RepeatingList
 
 urlpatterns = patterns('',
     url(r'^$', TemplateView.as_view(template_name="home.html"), name="home"),
@@ -18,4 +19,5 @@ urlpatterns = patterns('',
     url(r'^add/to/list/(?P<slug>\w+[-\w\d]+)/$', AddToList.as_view(), name="add_to_list"),
     url(r'^add/to/area/(?P<slug>\w+[-\w\d]+)/$', AddToArea.as_view(), name="add_to_area"),
     url(r'^list/complete$', MultiComplete.as_view(), name='complete_multi'),
+    url(r'^repeating/$', RepeatingList.as_view(), name='list_repeating'),
 )

@@ -15,7 +15,7 @@
                     .append($('<button />', {'class': 'close', 'data-dismiss': 'modal'}).text('x')))
                 .append($('<div />', {'class': 'modal-body'})
                     .text('Loading'))
-                .insertAfter($this.closest('.fold-target, body').first());
+                .insertAfter($this.closest('.fold-target, .reload-target, body').first());
                 $('#taskModal').modal({'keyboard': false, 'backdrop': 'static'}).modal('show');
 
                 function updateForm() {
