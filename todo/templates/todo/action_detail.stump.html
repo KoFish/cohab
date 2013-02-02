@@ -1,6 +1,6 @@
 {% load url from future %}
 <h3>{{ action.name }}</h3>
-<ul>
+<ul id="{{ action.name }}-list" data-url="{% url 'todo:complete_multi' %}" class="multi-complete">
 {% for task in todo %}
 <li>{% include "todo/task_details.list.html" %}</li>
 {% endfor %}

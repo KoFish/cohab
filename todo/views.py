@@ -1,12 +1,13 @@
 #from django import forms
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView
-from django.views.generic import FormView
+from django.views.generic import TemplateView, View
 from django.db.models import Q
 from django.contrib.auth.models import User
+from django.contrib import messages
 from datetime import datetime
 from todo.models import Task, TaskArea, TaskAction
-from todo.forms import TaskForm
+from todo.exceptions import TodoCompletedException
 from lib.views import ProtectedMixin, AjaxMixin
 
 
@@ -39,12 +40,12 @@ class UserView(ProtectedMixin, AjaxMixin, TodoMixin, DetailView):
     model = User
     template_name = 'todo/user_detail.html'
     ajax_template_name = 'todo/user_detail.stump.html'
-    context_object_name = 'user'
+    context_object_name = 'show_user'
     slug_field = 'username'
 
     def get_context_data(self, *a, **kw):
         ret = super(UserView, self).get_context_data(*a, **kw).copy()
-        user = ret['user']
+        user = ret['show_user']
         ret['incomplete'] = user.tasks.filter(completed__isnull=True)
         ret['areas'] = user.areas.all()
         return ret
@@ -110,10 +111,9 @@ class ActionList(ProtectedMixin, TodoMixin, ListView):
         return q.filter(**filters)
 
 
-class AddTask(ProtectedMixin, AjaxMixin, TodoMixin, FormView):
+class AddTask(ProtectedMixin, AjaxMixin, TodoMixin, TemplateView):
     template_name = 'todo/add_task.html'
     ajax_template_name = 'todo/add_task_form.html'
-    form_class = TaskForm
 
     def dispatch(self, request, *a, **kw):
         if not request.is_ajax():
@@ -128,13 +128,26 @@ class AddTask(ProtectedMixin, AjaxMixin, TodoMixin, FormView):
 
     def post(self, request, *a, **kw):
         action = TaskAction.objects.get(id=request.POST.get('action'))
-        t = {'deadline': datetime.strptime(request.POST.get('deadline'), "%Y/%m/%d"),
+        deadline = request.POST.get('deadline', None)
+        object_ = request.POST.get('object') if action.has_object else ""
+        if action.has_object and not object_:
+            return self.json_response({'status': 'error', 'message': 'This action needs an object'})
+        t = {'deadline': datetime.strptime(deadline, "%Y/%m/%d") if deadline else None,
              'owner': request.user,
              'action': action,
-             'object': request.POST.get('object') if action.has_object else None,
+             'object': object_,
              'area': TaskArea.objects.get(id=request.POST.get('area')) if action.has_area else None}
+        if 'assign' in request.POST:
+            t['assigned'] = User.objects.get(username=request.POST.get('assign'))
         Task.objects.create(**t)
         return self.json_response({'status': 'success'})
+
+
+class AddToUser(AddTask):
+    def get_context_data(self, *a, **kw):
+        ctx = super(AddToUser, self).get_context_data(*a, **kw)
+        ctx['assign'] = User.objects.get(username=self.kwargs['slug'])
+        return ctx
 
 
 class AddToArea(AddTask):
@@ -151,3 +164,17 @@ class AddToList(AddTask):
         ctx['areas'] = TaskArea.objects.values('id', 'name')
         ctx['action'] = TaskAction.objects.get(slug=self.kwargs['slug'])
         return ctx
+
+
+class MultiComplete(ProtectedMixin, AjaxMixin, View):
+    def post(self, request, *a, **kw):
+        tasks = request.POST.getlist('complete')
+        if tasks:
+            print tasks
+            for t in Task.objects.filter(pk__in=tasks).all():
+                try:
+                    t.complete(request)
+                    messages.success(request, "%s has been set as completed" % t.name)
+                except TodoCompletedException:
+                    messages.warning(request, "%s has already been set as completed" % t.name)
+        return self.json_response({'status': 'success'})

@@ -15,9 +15,11 @@
                         <ul class="nav nav-list">
                             <li><a href="{% url 'todo:home' %}">Home</a></li>
                             <li><a href="{% url 'todo:list_tasks' %}">Todo</a></li>
+                            <li><ul class="nav nav-list">
                             {% if user.is_authenticated %}
                             <li><a href="{% url 'todo:list_tasks' %}?user={{ user.pk }}">Just my tasks</a></li>
                             {% endif %}
+                            </ul>
                             <li><a href="{% url 'todo:list_areas' %}">Areas</a></li>
                             <li><a href="{% url 'todo:list_actions' %}">Lists</a></li>
                             <li class="divider"></li>
@@ -41,6 +43,7 @@
         <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.login-modal.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.task-modal.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.task-counter.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.multi-complete.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/jquery.jdpicker.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL}}js/todo.js"></script>
 {% endblock %}

@@ -8,8 +8,8 @@
                 {% for area in taskarea_list %}
                 {% if area.tasks.exists %}
                 <article>
-                <i class="{% if area.has_task %}icon-circle{% else %}icon-circle-blank{% endif %}"></i> <a class="url-folder" data-foldee="#fold-target-{{ area.slug }}" href="{% url 'todo:show_area' slug=area.slug %}" id="show-{{ area.slug }}">{{ area.name }}</a>
-                <div class="drop-in" id="fold-target-{{ area.slug }}"></div>
+                <i class="{% if area.has_task %}icon-circle{% else %}icon-circle-blank{% endif %}"></i> <a class="url-folder" data-foldee="#fold-target-{{ area.slug }}" href="#show-{{ area.slug }}" id="show-{{ area.slug }}">{{ area.name }}</a>
+                <div data-url="{% url 'todo:show_area' slug=area.slug %}" class="drop-in fold-target" id="fold-target-{{ area.slug }}"></div>
                 </article>
                 {% endif %}
                 {% empty %}<h1>Nothing to do here!</h1>{% endfor %}

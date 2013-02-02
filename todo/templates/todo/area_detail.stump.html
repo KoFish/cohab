@@ -1,5 +1,7 @@
 {% load url from future %}
-<button class="btn add-task-btn" href="{% url "todo:add_to_area" area.slug %}">Add task</button>
+<div>
+    <button class="btn add-task-btn" href="{% url "todo:add_to_area" area.slug %}">Add task</button>
+</div>
 {% for task in todo %}
 {% include "todo/task_details.html" %}
 {% endfor %}

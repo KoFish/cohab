@@ -5,9 +5,8 @@
                                 'startsize': 10,
                                 'endsize': 20,
                                 'fadespeed': 300},
-                                options),
-                completed = new $.Deferred();
-            $.when(this.map(function() {
+                                options);
+            return $.when.apply(null, this.map(function() {
                 var $obj = $(this),
                     promise = new $.Deferred(),
                     pos = $.extend({
@@ -47,14 +46,14 @@
                         $pre.remove();
                         promise.resolve();
                     }).appendTo($obj);
-            })).then(function() {
-                completed.resolve();
-            });
-            return completed;
+                return promise;
+            }).get());
         },
         destroy : function() {
-            var completed = new $.Deferred();
-            $.when(this.map(function() {
+            if ($(this).children('.overlay').length === 0) {
+                return $.when();
+            }
+            return $.when.apply(null, this.map(function() {
                 var $obj = $(this),
                     promise = new $.Deferred();
                     pos = $.extend({
@@ -72,24 +71,19 @@
                     height: pos.height + 2*endsize
                 }, speed, function() {
                     $(this).remove();
-                    completed.resolve();
+                    promise.resolve();
                 });
-            })).done(function() { completed.resolve(); });
-            return completed.promise();
+                return promise;
+            }).get());
         }
     };
     $.fn.overlay = function(method, callback) {
-        if (this.size() === 0) {
-            completed.resolve();
+        if (methods[method]) {
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if (typeof method === 'object' || ! method) {
+            return methods.init.apply(this, arguments);
         } else {
-            if (methods[method]) {
-                return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-            } else if (typeof method === 'object' || ! method) {
-                return methods.init.apply(this, arguments);
-            } else {
-                $.error('Method ' + method + ' does not exist on jQuery.overlay');
-            }
+            $.error('Method ' + method + ' does not exist on jQuery.overlay');
         }
-        return completed.promise();
     };
 })(jQuery);

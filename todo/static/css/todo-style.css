@@ -1,6 +1,9 @@
 #todo-list {
     padding-top: 1em;
 }
+.todo-list-task {
+    display: inline;
+}
 .todo-task {
     position: relative;
     opacity: 0.7;

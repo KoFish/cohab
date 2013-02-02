@@ -1,3 +1,12 @@
+jQuery.reload = function(obj) {
+    var $foldPoint = obj.closest('.fold-target');
+    if ($foldPoint.length > 0) {
+        $foldPoint.folder("update");
+    } else {
+        _.defer(function() { location.reload(); });
+    }
+};
+
 (function($) {
     $.fn.setupTask = function() {
         return this.each(function() {
@@ -9,29 +18,23 @@
                     $btn = $(this);
                 $(this).click(function(e) {
                     e.preventDefault();
-                    $('.todo-task').overlay("destroy")
+                    $task.overlay({'startsize': 10, 'endsize': 50, 'fadespeed': 300})
                     .then(function() {
-                        $task.overlay({'startsize': 10, 'endsize': 50, 'fadespeed': 1000})
-                        .then(function() {
-                            $.getJSON(url)
-                            .success(function(data) {
-                                //$task.remove();
-                                $task.overlay("destroy")
-                                .then(function() {
-                                    location.reload();
-                                });
-                            })
-                            .error(function(err) {
-                                $task.overlay("destroy");
-                                $task.popover({
-                                    'placement': 'bottom',
-                                    'trigger': 'manual',
-                                    'title': 'Failed '+$btn.text(),
-                                    'text': err
-                                }).popover('show');
-                                console.log("Couldn't fetch url:");
-                                console.log(err);
-                            });
+                        $.getJSON(url)
+                        .success(function(data) {
+                            $.reload($task);
+                            $task.overlay("destroy").then(function() { $.reload($task); });
+                        })
+                        .error(function(err) {
+                            $task.overlay("destroy");
+                            $task.popover({
+                                'placement': 'bottom',
+                                'trigger': 'manual',
+                                'title': 'Failed '+$btn.text(),
+                                'text': err
+                            }).popover('show');
+                            console.log("Couldn't fetch url:");
+                            console.log(err);
                         });
                     });
                 });
@@ -40,33 +43,89 @@
     };
 })(jQuery);
 
-function getHashes() {
-    return _.filter(location.hash.split('#'), function(s) { return s !== ''; });
-}
+var Hash = {
+    getHashes: function() {
+        return _.filter(location.hash.split('#'), function(s) { return s !== ''; });
+    },
+    addHash: function(hash) {
+        location.hash = _.filter(Hash.getHashes(), function(e) { return e !== hash; }).concat([hash]).join('#');
+    },
+    removeHash: function(hash) {
+        location.hash = _.filter(Hash.getHashes(), function(e) { return e !== hash; }).join('#');
+    }
+};
 
 (function($) {
-    $.fn.folder = function() {
-        return this.each(function() {
-            var $this = $(this),
-                $foldee = $($this.data('foldee'));
-            $foldee.hide();
-            $this.click(function(e) {
-                var id = $this.attr('id');
-                e.preventDefault();
-                if ($foldee.hasClass('open')) {
-                    $foldee.removeClass('open')
-                           .slideUp("fast");
-                    location.hash = _.filter(getHashes(), function(e) { return e !== id; }).join('#');
-                    return;
-                } else {
-                    $foldee.addClass('open');
+    var methods = {
+        init : function(options) {
+            var settings = $.extend({
+            }, options);
+
+            return this.each(function() {
+                var $this = $(this),
+                    $foldee = $($this.data('foldee')),
+                    data = $foldee.data('folder');
+                if ( ! data ) {
+                    $foldee.hide();
+                    $foldee.data('folder', {'fold-id': $this.attr('id')});
+                    $this.click(function(e) {
+                        e.preventDefault();
+                        if ($foldee.hasClass('open')) {
+                            $foldee.folder('fold');
+                        } else {
+                            $foldee.folder('unfold');
+                        }
+                    });
                 }
-                $.get($this.attr('href'), function(data) {
-                    $foldee.html(data).bootstrap().slideDown("fast");
-                    location.hash = _.filter(getHashes(), function(e) { return e !== id; }).concat([id]).join('#');
-                });
             });
-        });
+        },
+        fold : function() {
+            var $foldee = $(this),
+                data = $foldee.data('folder');
+            if ( data ) {
+                var id = data['fold-id'];
+                Hash.removeHash(id);
+                $foldee.removeClass('open').slideUp("fast");
+            }
+        },
+        unfold : function() {
+            var $foldee = $(this),
+                data = $foldee.data('folder');
+            if ( data ) {
+                var id = data['fold-id'];
+                $foldee.addClass('open');
+                Hash.addHash(id);
+                $foldee.folder('update');
+            }
+        },
+        update : function() {
+            var $foldee = $(this),
+                data = $foldee.data('folder');
+            if ( data ) {
+                var id = data['fold-id'];
+                if ($foldee.hasClass('open')) {
+                    $foldee.overlay({fadespeed: $foldee.is(':visible') ? 300 : 0}).then(function() {
+                        $.get($foldee.data('url'), function(data) {
+                            var overlay = $foldee.find('.overlay').detach();
+                            $foldee.html(data).bootstrap().slideDown("fast");
+                            $foldee.append(overlay);
+                            $foldee.overlay('destroy');
+                        });
+                    });
+                } else {
+                    $foldee.folder('unfold');
+                }
+            }
+        }
+    };
+    $.fn.folder = function(method) {
+        if (methods[method]) {
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if (typeof method === 'object' || ! method) {
+            return methods.init.apply(this, arguments);
+        } else {
+            $.error('Method ' + method + ' does not exist on jQuery.folder');
+        }
     };
 })(jQuery);
 
@@ -79,6 +138,7 @@ function getHashes() {
             $this.find('a.login').loginModal();
             $this.find('.add-task-btn').taskModal();
             $this.find('.url-folder').folder();
+            $this.find('.multi-complete').multiComplete();
             $this.find('.todo-list-task a.foldout-toggle').each(function() {
                 var $this = $(this),
                     foldee = $($this.data('foldee'));
@@ -107,7 +167,7 @@ function getHashes() {
 $(document).ready(function() {
     $.timeago.settings.allowFuture = true;
     $('body').bootstrap();
-    _.each(getHashes(), function(e, i) {
+    _.each(Hash.getHashes(), function(e, i) {
         $('#'+e).click();
     });
 });

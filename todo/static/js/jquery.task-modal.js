@@ -15,7 +15,7 @@
                     .append($('<button />', {'class': 'close', 'data-dismiss': 'modal'}).text('x')))
                 .append($('<div />', {'class': 'modal-body'})
                     .text('Loading'))
-                .appendTo('body');
+                .insertAfter($this.closest('.fold-target, body').first());
                 $('#taskModal').modal({'keyboard': false, 'backdrop': 'static'}).modal('show');
 
                 function updateForm() {
@@ -24,17 +24,17 @@
                         var $this = $(this),
                             has_area = $this.data('has-area'),
                             has_object = $this.data('has-object');
-                        $modal.find('#object-group')
+                        $modal.find('#area-group')
                                 .each(function() {
-                                    if (has_object) {
+                                    if (has_area) {
                                         $(this).show();
                                     } else {
                                         $(this).hide();
                                     }
                                 }).end()
-                              .find('#area-group')
+                              .find('#object-group')
                                 .each(function() {
-                                    if (has_area) {
+                                    if (has_object) {
                                         $(this).show();
                                     } else {
                                         $(this).hide();
@@ -50,7 +50,8 @@
                 }
 
                 function setupModal(data) {
-                    var $modal = $('#taskModal');
+                    var $modal = $('#taskModal'),
+                        $parent = $modal.prev();
                     $modal
                         .on('hidden', function() { $modal.remove(); })
                         .find('.modal-body')
@@ -78,7 +79,8 @@
                                 .done(function(data, textStatus, jqXHR) {
                                     if (data instanceof Object) {
                                         if (data.status == "success") {
-                                            $modal.on('hidden', function() { location.reload(); }).modal('hide');
+                                            $.reload($parent);
+                                            $modal.modal('hide');
                                             return;
                                         }
                                     }
@@ -93,7 +95,6 @@
                     setupModal(data); 
                 });
             });
-            console.log(url);
         }));
     };
 })(jQuery);
